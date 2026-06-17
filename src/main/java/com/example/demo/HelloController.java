@@ -11,7 +11,7 @@ public class HelloController {
 
     private List<String> messages = new ArrayList<>();
 
-    @GetMapping("/")
+    @GetMapping("/msg")
     public String home() {
         return "歡迎！請使用 /add?msg=內容 留言，或使用 /list 查看。";
     }
