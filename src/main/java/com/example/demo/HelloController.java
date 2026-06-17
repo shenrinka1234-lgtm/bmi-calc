@@ -9,8 +9,13 @@ import java.util.List;
 @RestController
 public class HelloController {
 
-    // 用一個簡單的 List 當作記憶體資料庫
     private List<String> messages = new ArrayList<>();
+
+    // 當你直接打開網址時，會顯示這個首頁
+    @GetMapping("/")
+    public String home() {
+        return "歡迎！請使用 /add?msg=內容 留言，或使用 /list 查看內容。";
+    }
 
     @GetMapping("/add")
     public String addMessage(@RequestParam String msg) {
@@ -22,9 +27,8 @@ public class HelloController {
     public String listMessages() {
         return "目前的留言板內容: " + messages.toString();
     }
-    @GetMapping("/clear")
-    public String clearMessages() {
-        messages.clear(); // 清空 List
-        return "留言板已清空！";
+    @GetMapping("/")
+    public String home() {
+        return "這是首頁！請使用 /add?msg=你的訊息 來留言，或使用 /list 查看。";
     }
 }
