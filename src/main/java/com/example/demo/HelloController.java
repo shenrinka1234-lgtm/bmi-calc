@@ -22,4 +22,9 @@ public class HelloController {
     public String listMessages() {
         return "目前的留言板內容: " + messages.toString();
     }
+    @GetMapping("/clear")
+    public String clearMessages() {
+        messages.clear(); // 清空 List
+        return "留言板已清空！";
+    }
 }
