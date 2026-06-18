@@ -80,12 +80,19 @@ public void deleteLog(@PathVariable Long id) {
     @GetMapping
     public List<HealthLog> getAllLogs() { return repository.findAll(); }
 
-   @PostMapping
-public HealthLog createLog(@RequestBody HealthLog log) {
-    // 🔥 在這裡補上這行，自動抓取系統當下的日期
+    @PostMapping
+    public HealthLog createLog(@RequestBody HealthLog log) {
+    // 1. 防禦性檢查 (先檢查資料是否正確)
+    if (log.getMoodScore() < 1 || log.getMoodScore() > 10) {
+        throw new IllegalArgumentException("心情分數必須介於 1 到 10 之間！");
+    }
+    
+    // 2. 自動補上日期
     log.setLogDate(LocalDate.now()); 
     
+    // 3. 執行決策樹運算並儲存
     log.setRiskLevel(calculateRiskLevel(log.getSleepHours(), log.getSteps(), log.getMoodScore()));
     return repository.save(log);
 }
+
 }
