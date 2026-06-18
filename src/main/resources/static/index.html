@@ -2,73 +2,45 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>智慧健康日誌與風險評估系統</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 800px; margin: 30px auto; padding: 20px; background-color: #f4f7f6; }
-        h2, h3 { color: #333; }
+        body { font-family: sans-serif; max-width: 800px; margin: 30px auto; padding: 20px; background-color: #f4f7f6; }
         .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
-        input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        button { background-color: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
-        button:hover { background-color: #0056b3; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        th { background-color: #e9ecef; color: #495057; }
-        .badge { padding: 5px 10px; border-radius: 20px; color: white; font-weight: bold; font-size: 14px; }
-        .badge-low { background-color: #28a745; }
-        .badge-medium { background-color: #ffc107; color: #333; }
-        .badge-high { background-color: #dc3545; }
+        button { background-color: #007bff; color: white; padding: 10px; border: none; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
     </style>
 </head>
 <body>
 
-    <h2>📋 智慧健康日誌與風險評估系統 (題目 A)</h2>
-    
+    <h2>📋 智慧健康日誌系統</h2>
+
     <div class="card">
-        <h3>➕ 新增今日健康數據</h3>
-        <div class="form-group">
-            <label>睡眠時數 (小時)：</label>
-            <input type="number" id="sleepHours" step="0.1" placeholder="例如：7.5">
-        </div>
-        <div class="form-group">
-            <label>當日步數：</label>
-            <input type="number" id="steps" placeholder="例如：8000">
-        </div>
-        <div class="form-group">
-            <label>心情分數 (1~10 分)：</label>
-            <input type="number" id="moodScore" min="1" max="10" placeholder="1 最差，10 最好">
-        </div>
-        <button onclick="saveLog()">計算並儲存至資料庫</button>
+        <input type="number" id="sleepHours" placeholder="睡眠時數">
+        <input type="number" id="steps" placeholder="步數">
+        <input type="number" id="moodScore" placeholder="心情分數 (1-10)">
+        <button onclick="saveLog()">儲存</button>
     </div>
 
     <div class="card">
-        <h3>📊 歷史健康日誌紀錄 (DB)</h3>
+        <h3>📈 心情分數趨勢圖</h3>
+        <canvas id="healthChart" width="400" height="150"></canvas>
+    </div>
+
+    <div class="card">
+        <h3>📊 歷史健康日誌紀錄</h3>
         <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>日期</th>
-                    <th>睡眠時數</th>
-                    <th>步數</th>
-                    <th>心情分數</th>
-                    <th>決策樹風險等級評估</th>
-                    <th>操作</th>
-                </tr>
-            </thead>
-            <tbody id="logTableBody">
-                </tbody>
+            <thead><tr><th>ID</th><th>日期</th><th>心情</th><th>風險等級</th><th>操作</th></tr></thead>
+            <tbody id="logTableBody"></tbody>
         </table>
     </div>
 
     <script>
-        // 網頁載入時自動讀取歷史紀錄
-        window.onload = function() {
-            loadLogs();
-        };
+        let myChart; // 定義圖表變數
 
-        // 讀取紀錄 (GET)
+        window.onload = loadLogs;
+
         function loadLogs() {
             fetch('/health-logs')
                 .then(res => res.json())
@@ -76,65 +48,34 @@
                     const tbody = document.getElementById('logTableBody');
                     tbody.innerHTML = '';
                     data.forEach(log => {
-                        let badgeClass = 'badge-low';
-                        if (log.riskLevel.includes('中')) badgeClass = 'badge-medium';
-                        if (log.riskLevel.includes('高')) badgeClass = 'badge-high';
-
-                        tbody.innerHTML += `
-                            <tr>
-                                <td>${log.id}</td>
-                                <td>${log.logDate}</td>
-                                <td>${log.sleepHours} 小時</td>
-                                <td>${log.steps} 步</td>
-                                <td>${log.moodScore} 分</td>
-                                <td><span class="badge ${badgeClass}">${log.riskLevel}</span></td>
-                                <td><button style="background-color:#dc3545; padding:5px 10px; font-size:12px;" onclick="deleteLog(${log.id})">刪除</button></td>
-                            </tr>
-                        `;
+                        tbody.innerHTML += `<tr><td>${log.id}</td><td>${log.logDate}</td><td>${log.moodScore}</td><td>${log.riskLevel}</td>
+                            <td><button onclick="deleteLog(${log.id})">刪除</button></td></tr>`;
                     });
+                    renderChart(data); // 抓到資料後自動畫圖
                 });
         }
 
-        // 新增紀錄 (POST)
-        function saveLog() {
-            const sleep = document.getElementById('sleepHours').value;
-            const steps = document.getElementById('steps').value;
-            const mood = document.getElementById('moodScore').value;
-
-            if(!sleep || !steps || !mood) {
-                alert('請填寫完整的所有健康數據！');
-                return;
-            }
-
-            const payload = {
-                sleepHours: parseFloat(sleep),
-                steps: parseInt(steps),
-                moodScore: parseInt(mood)
-            };
-
-            fetch('/health-logs', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            })
-            .then(res => res.json())
-            .then(() => {
-                alert('儲存成功！已透過後端決策樹模型完成風險判定！');
-                loadLogs(); // 重新整理表格
-                // 清空輸入框
-                document.getElementById('sleepHours').value = '';
-                document.getElementById('steps').value = '';
-                document.getElementById('moodScore').value = '';
+        function renderChart(data) {
+            const ctx = document.getElementById('healthChart').getContext('2d');
+            if (myChart) myChart.destroy();
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(d => d.logDate),
+                    datasets: [{ label: '心情分數趨勢', data: data.map(d => d.moodScore), borderColor: '#007bff', fill: false }]
+                }
             });
         }
 
-        // 刪除紀錄 (DELETE)
+        function saveLog() {
+            const payload = { sleepHours: parseFloat(document.getElementById('sleepHours').value), steps: parseInt(document.getElementById('steps').value), moodScore: parseInt(document.getElementById('moodScore').value) };
+            fetch('/health-logs', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) })
+                .then(() => loadLogs());
+        }
+
         function deleteLog(id) {
-            if(confirm('確定要刪除這筆紀錄嗎？')) {
-                fetch('/health-logs/' + id, { method: 'DELETE' })
-                    .then(() => {
-                        loadLogs();
-                    });
+            if(confirm('確定刪除？')) {
+                fetch('/health-logs/' + id, { method: 'DELETE' }).then(() => loadLogs());
             }
         }
     </script>
