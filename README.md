@@ -35,6 +35,13 @@ ORM: Spring Data JPA
 
 Build Tool: Maven
 
+專案目錄結構說明：
+
+pom.xml: 定義了專案的相依性管理（Dependency Management），確保 Spring Boot 與 H2 資料庫能正確運作。
+
+HelloController.java: 作為核心 API 入口，負責處理前端請求並協調 ML 決策樹模組與 JPA 資料庫存取。
+
+Dockerfile: 定義了容器化環境，確保專案能於 Render 或任何雲端平台上一致地部署與執行。
 決策樹實作邏輯：
 本專案實作了一棵 深度為 2 的分類決策樹。
 
