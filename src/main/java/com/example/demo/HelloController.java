@@ -27,13 +27,22 @@ class HealthLog {
         this.moodScore = moodScore;
         this.riskLevel = riskLevel;
     }
-    // Getters and Setters 省略，請保留你原本的 (若沒寫請補上)
+
+    // 🔥【關鍵修正】補上這些 Getter 和 Setter，解決找不到 symbol 的錯誤
     public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
     public LocalDate getLogDate() { return logDate; }
+    public void setLogDate(LocalDate logDate) { this.logDate = logDate; }
     public Double getSleepHours() { return sleepHours; }
+    public void setSleepHours(Double sleepHours) { this.sleepHours = sleepHours; }
     public Integer getSteps() { return steps; }
+    public void setSteps(Integer steps) { this.steps = steps; }
     public Integer getMoodScore() { return moodScore; }
+    public void setMoodScore(Integer moodScore) { this.moodScore = moodScore; }
     public String getRiskLevel() { return riskLevel; }
+    
+    // 這就是編譯器一直在找的方法
+    public void setRiskLevel(String riskLevel) { this.riskLevel = riskLevel; }
 }
 
 interface HealthLogRepository extends org.springframework.data.jpa.repository.JpaRepository<HealthLog, Long> {}
