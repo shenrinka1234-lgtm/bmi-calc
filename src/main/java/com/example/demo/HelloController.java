@@ -73,7 +73,7 @@ public class HelloController {
     }
 
  
-    @DeleteMapping("/health-logs/{id}")
+    @DeleteMapping("/{id}")
 public void deleteLog(@PathVariable Long id) {
     repository.deleteById(id);
 }
