@@ -65,17 +65,7 @@ public class HelloController {
         }
     }
 
-    @PostConstruct
-    public void initSeedData() {
-        if (repository.count() > 0) return;
-        LocalDate startDate = LocalDate.now().minusDays(90);
-        for (int i = 0; i < 90; i++) {
-            double s = (i < 25) ? 4.5 : ((i < 65) ? 6.5 : 8.0);
-            int st = (i < 25) ? 2000 : ((i < 65) ? 5000 : 8000);
-            int m = (i < 25) ? 3 : ((i < 65) ? 6 : 9);
-            repository.save(new HealthLog(startDate.plusDays(i), s, st, m, calculateRiskLevel(s, st, m)));
-        }
-    }
+ 
 
     @GetMapping
     public List<HealthLog> getAllLogs() { return repository.findAll(); }
