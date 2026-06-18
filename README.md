@@ -19,6 +19,7 @@ JPA 服務層：後端將運算後的風險等級與原始數據，封裝進 Hea
 
 資料流轉：後端在此扮演了「大腦」的角色，串接了數據接收 -> 邏輯運算 (ML) -> 資料持久化 (DB) 的完整循環。
 
+
 🚀 核心功能
 自動化決策樹風險評估：根據睡眠時數、步數與心情分數，自動分類為高、中、低風險。
 
@@ -30,6 +31,7 @@ GET /health-logs: 讀取所有健康日誌紀錄。
 
 POST /health-logs: 新增一筆日誌並自動執行風險評估。
 
+
 🛠️ 技術實作
 Framework: Spring Boot 3.1.0
 
@@ -39,6 +41,7 @@ ORM: Spring Data JPA
 
 Build Tool: Maven
 
+
 專案目錄結構說明：
 
 pom.xml: 定義了專案的相依性管理（Dependency Management），確保 Spring Boot 與 H2 資料庫能正確運作。
@@ -46,6 +49,7 @@ pom.xml: 定義了專案的相依性管理（Dependency Management），確保 S
 HelloController.java: 作為核心 API 入口，負責處理前端請求並協調 ML 決策樹模組與 JPA 資料庫存取。
 
 Dockerfile: 定義了容器化環境，確保專案能於 Render 或任何雲端平台上一致地部署與執行。
+
 決策樹實作邏輯：
 本專案實作了一棵 深度為 2 的分類決策樹。
 
