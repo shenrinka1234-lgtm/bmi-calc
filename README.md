@@ -34,6 +34,15 @@ Database: H2 In-Memory Database
 ORM: Spring Data JPA
 
 Build Tool: Maven
+
+決策樹實作邏輯：
+本專案實作了一棵 深度為 2 的分類決策樹。
+
+根節點：以 sleepHours 為第一切分點，優先過濾出極度缺乏睡眠的樣本。
+
+子節點：基於第一層的結果，分流至不同的特徵節點（mood 或 steps）進行二次篩選。
+
+優勢：此結構模擬了 ID3/C4.5 決策樹的判斷流，確保風險評估不是線性判斷，而是具備優先級別的決策模型。
 ```mermaid
 graph TD
     A[bmi-calc/ - 專案根目錄] --> B[src/ - 原始碼]
