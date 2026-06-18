@@ -1,41 +1,142 @@
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>期末挑戰項目</title>
+    <title>智慧健康日誌與風險評估系統</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; line-height: 1.6; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 800px; margin: 30px auto; padding: 20px; background-color: #f4f7f6; }
+        h2, h3 { color: #333; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
         .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input[type="text"], input[type="number"] { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
-        button { background-color: #28a745; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; }
-        button:hover { background-color: #218838; }
-        .result-box { margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-left: 5px solid #007bff; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #0056b3; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #e9ecef; color: #495057; }
+        .badge { padding: 5px 10px; border-radius: 20px; color: white; font-weight: bold; font-size: 14px; }
+        .badge-low { background-color: #28a745; }
+        .badge-medium { background-color: #ffc107; color: #333; }
+        .badge-high { background-color: #dc3545; }
     </style>
 </head>
 <body>
 
-    <h2>期末挑戰系統</h2>
-    <p>後端伺服器已成功連線！明天的功能畫面會顯示在這裡。</p>
-
-    <div class="form-group">
-        <label for="userInput">測試輸入欄位：</label>
-        <input type="text" id="userInput" placeholder="請輸入內容...">
+    <h2>📋 智慧健康日誌與風險評估系統 (題目 A)</h2>
+    
+    <div class="card">
+        <h3>➕ 新增今日健康數據</h3>
+        <div class="form-group">
+            <label>睡眠時數 (小時)：</label>
+            <input type="number" id="sleepHours" step="0.1" placeholder="例如：7.5">
+        </div>
+        <div class="form-group">
+            <label>當日步數：</label>
+            <input type="number" id="steps" placeholder="例如：8000">
+        </div>
+        <div class="form-group">
+            <label>心情分數 (1~10 分)：</label>
+            <input type="number" id="moodScore" min="1" max="10" placeholder="1 最差，10 最好">
+        </div>
+        <button onclick="saveLog()">計算並儲存至資料庫</button>
     </div>
-    <button onclick="sendData()">送出測試</button>
 
-    <div class="result-box">
-        <strong>系統回應結果：</strong>
-        <p id="resultText">等待送出...</p>
+    <div class="card">
+        <h3>📊 歷史健康日誌紀錄 (DB)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>日期</th>
+                    <th>睡眠時數</th>
+                    <th>步數</th>
+                    <th>心情分數</th>
+                    <th>決策樹風險等級評估</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody id="logTableBody">
+                </tbody>
+        </table>
     </div>
 
     <script>
-        function sendData() {
-            const inputVal = document.getElementById('userInput').value;
-            
-            // 明天會在這裡寫 fetch，把資料傳給 Java 後端
-            document.getElementById('resultText').innerText = '你輸入了：' + inputVal + ' (等等明天串接後端邏輯)';
+        // 網頁載入時自動讀取歷史紀錄
+        window.onload = function() {
+            loadLogs();
+        };
+
+        // 讀取紀錄 (GET)
+        function loadLogs() {
+            fetch('/health-logs')
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.getElementById('logTableBody');
+                    tbody.innerHTML = '';
+                    data.forEach(log => {
+                        let badgeClass = 'badge-low';
+                        if (log.riskLevel.includes('中')) badgeClass = 'badge-medium';
+                        if (log.riskLevel.includes('高')) badgeClass = 'badge-high';
+
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${log.id}</td>
+                                <td>${log.logDate}</td>
+                                <td>${log.sleepHours} 小時</td>
+                                <td>${log.steps} 步</td>
+                                <td>${log.moodScore} 分</td>
+                                <td><span class="badge ${badgeClass}">${log.riskLevel}</span></td>
+                                <td><button style="background-color:#dc3545; padding:5px 10px; font-size:12px;" onclick="deleteLog(${log.id})">刪除</button></td>
+                            </tr>
+                        `;
+                    });
+                });
+        }
+
+        // 新增紀錄 (POST)
+        function saveLog() {
+            const sleep = document.getElementById('sleepHours').value;
+            const steps = document.getElementById('steps').value;
+            const mood = document.getElementById('moodScore').value;
+
+            if(!sleep || !steps || !mood) {
+                alert('請填寫完整的所有健康數據！');
+                return;
+            }
+
+            const payload = {
+                sleepHours: parseFloat(sleep),
+                steps: parseInt(steps),
+                moodScore: parseInt(mood)
+            };
+
+            fetch('/health-logs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(() => {
+                alert('儲存成功！已透過後端決策樹模型完成風險判定！');
+                loadLogs(); // 重新整理表格
+                // 清空輸入框
+                document.getElementById('sleepHours').value = '';
+                document.getElementById('steps').value = '';
+                document.getElementById('moodScore').value = '';
+            });
+        }
+
+        // 刪除紀錄 (DELETE)
+        function deleteLog(id) {
+            if(confirm('確定要刪除這筆紀錄嗎？')) {
+                fetch('/health-logs/' + id, { method: 'DELETE' })
+                    .then(() => {
+                        loadLogs();
+                    });
+            }
         }
     </script>
 </body>
