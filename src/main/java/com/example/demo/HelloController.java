@@ -72,9 +72,12 @@ public class HelloController {
     @GetMapping
     public List<HealthLog> getAllLogs() { return repository.findAll(); }
 
-    @PostMapping
-    public HealthLog createLog(@RequestBody HealthLog log) {
-        log.setRiskLevel(calculateRiskLevel(log.getSleepHours(), log.getSteps(), log.getMoodScore()));
-        return repository.save(log);
-    }
+   @PostMapping
+public HealthLog createLog(@RequestBody HealthLog log) {
+    // 🔥 在這裡補上這行，自動抓取系統當下的日期
+    log.setLogDate(LocalDate.now()); 
+    
+    log.setRiskLevel(calculateRiskLevel(log.getSleepHours(), log.getSteps(), log.getMoodScore()));
+    return repository.save(log);
+}
 }
