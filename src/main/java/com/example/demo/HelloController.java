@@ -60,9 +60,11 @@ public class HelloController {
             return (mood <= 4) ? "高風險 (High)" : "中風險 (Medium)";
         } else if (sleep >= 5.5 && sleep <= 7.0) {
             return (steps < 4000) ? "中風險 (Medium)" : "低風險 (Low)";
-        } else {
-            return (mood >= 7 && steps >= 6000) ? "低風險 (Low)" : (mood < 4 ? "中風險 (Medium)" : "低風險 (Low)");
-        }
+        } 
+         else {
+    if (mood < 3) return "高風險 (High)"; // 增加這行最強的過濾條件
+    return (mood >= 7 && steps >= 6000) ? "低風險 (Low)" : (mood < 4 ? "中風險 (Medium)" : "低風險 (Low)");
+}
     }
 
  
