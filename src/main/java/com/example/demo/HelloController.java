@@ -60,11 +60,16 @@ public class HelloController {
             return (mood <= 4) ? "高風險 (High)" : "中風險 (Medium)";
         } else if (sleep >= 5.5 && sleep <= 7.0) {
             return (steps < 4000) ? "中風險 (Medium)" : "低風險 (Low)";
-        } 
-         else {
-    if (mood < 3) return "高風險 (High)"; // 增加這行最強的過濾條件
-    return (mood >= 7 && steps >= 6000) ? "低風險 (Low)" : (mood < 4 ? "中風險 (Medium)" : "低風險 (Low)");
-}
+        } else { // 這是 sleep > 7.0 的情況
+        // 1. 先處理睡眠極端值
+        if (sleep > 12) return "中風險 (Medium)"; 
+        
+        // 2. 再處理心情極端值 (你剛剛那張圖裡面的邏輯)
+        if (mood < 3) return "高風險 (High)";
+        
+        // 3. 最後處理一般情況的邏輯
+        return (mood >= 7 && steps >= 6000) ? "低風險 (Low)" : (mood < 4 ? "中風險 (Medium)" : "低風險 (Low)");
+    }
     }
 
  
